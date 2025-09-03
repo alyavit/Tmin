@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Планирование завода</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Планирование строительства завода</h1>
+
+  <!-- Ввод данных -->
+  <div class="input-section">
+    <label>A. Строительство корпусов (годы): <input type="number" id="a" min="1" value="3"/></label><br/>
+    <label>B. Разработка модели (годы): <input type="number" id="b" min="1" value="1"/></label><br/>
+    <label>C. Наем и обучение (n): <input type="number" id="c_n" min="1" value="2"/></label><br/>
+    <label>D. Монтаж оборудования (n): <input type="number" id="d_n" min="1" value="2"/></label><br/>
+    <label>E. Отладка (n): <input type="number" id="e_n" min="1" value="2"/></label><br/>
+    <label>Резервные деньги R (млн руб): <input type="number" id="R" min="0" value="20"/></label><br/>
+    <button onclick="collectData()">Рассчитать</button>
+  </div>
+
+  <!-- Таблица прибыли (появляется после расчета Tmin) -->
+  <div id="profit-table-section" style="display:none;">
+    <h2>Введите прибыль в зависимости от срока (f0 > f1 > f2 > f3 > f4)</h2>
+    <div id="profit-inputs"></div>
+    <button onclick="calculateAll()">Построить таблицы и принять решение</button>
+  </div>
+
+  <!-- Результаты -->
+  <div id="results" style="display:none; margin-top: 20px;">
+    <h2>Результаты</h2>
+    <h3>Без использования резерва R</h3>
+    <table id="table-without-r"></table>
+
+    <h3>С использованием резерва R</h3>
+    <table id="table-with-r"></table>
+
+    <div id="principles"></div>
+
+    <button onclick="simulateOutcome()">Смоделировать случайный сценарий</button>
+    <div id="simulation-result"></div>
+
+    <div class="export-buttons">
+      <button onclick="exportToCSV()">Экспорт в CSV</button>
+      <button onclick="exportToTXT()">Экспорт в TXT</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

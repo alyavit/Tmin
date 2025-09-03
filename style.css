@@ -1,0 +1,5 @@
+body { font-family: Arial, sans-serif; margin: 20px; }
+input { width: 60px; margin: 5px; }
+table { border-collapse: collapse; margin: 10px 0; }
+td, th { border: 1px solid #ccc; padding: 5px 10px; text-align: center; }
+.export-buttons { margin-top: 20px; }
