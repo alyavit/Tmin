@@ -1,52 +1,118 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Планирование завода</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Расчет использования резервных средств</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Планирование строительства завода</h1>
-
-  <!-- Ввод данных -->
-  <div class="input-section">
-    <label>A. Строительство корпусов (годы): <input type="number" id="a" min="1" value="3"/></label><br/>
-    <label>B. Разработка модели (годы): <input type="number" id="b" min="1" value="1"/></label><br/>
-    <label>C. Наем и обучение (n): <input type="number" id="c_n" min="1" value="2"/></label><br/>
-    <label>D. Монтаж оборудования (n): <input type="number" id="d_n" min="1" value="2"/></label><br/>
-    <label>E. Отладка (n): <input type="number" id="e_n" min="1" value="2"/></label><br/>
-    <label>Резервные деньги R (млн руб): <input type="number" id="R" min="0" value="20"/></label><br/>
-    <button onclick="collectData()">Рассчитать</button>
-  </div>
-
-  <!-- Таблица прибыли (появляется после расчета Tmin) -->
-  <div id="profit-table-section" style="display:none;">
-    <h2>Введите прибыль в зависимости от срока (f0 > f1 > f2 > f3 > f4)</h2>
-    <div id="profit-inputs"></div>
-    <button onclick="calculateAll()">Построить таблицы и принять решение</button>
-  </div>
-
-  <!-- Результаты -->
-  <div id="results" style="display:none; margin-top: 20px;">
-    <h2>Результаты</h2>
-    <h3>Без использования резерва R</h3>
-    <table id="table-without-r"></table>
-
-    <h3>С использованием резерва R</h3>
-    <table id="table-with-r"></table>
-
-    <div id="principles"></div>
-
-    <button onclick="simulateOutcome()">Смоделировать случайный сценарий</button>
-    <div id="simulation-result"></div>
-
-    <div class="export-buttons">
-      <button onclick="exportToCSV()">Экспорт в CSV</button>
-      <button onclick="exportToTXT()">Экспорт в TXT</button>
+    <div class="main-container">
+        <h1>Расчет использования резервных средств для ускорения строительства завода</h1>
+        
+        <div class="container">
+            <h2>Ввод данных</h2>
+            
+            <div class="input-group">
+                <label for="a">Этап A (Строительство корпусов, лет):</label>
+                <input type="number" id="a" min="1" value="3">
+            </div>
+            
+            <div class="input-group">
+                <label for="b">Этап B (Разработка модели изделия, лет):</label>
+                <input type="number" id="b" min="1" value="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="n">Базовое время для этапов C, D, E (n):</label>
+                <input type="number" id="n" min="1" value="2">
+            </div>
+            
+            <div class="input-group">
+                <label for="r">Резервные средства R (млн. руб.):</label>
+                <input type="number" id="r" min="1" value="20">
+            </div>
+            
+            <h3>Таблица прибыли</h3>
+            <p>Введите значения прибыли для разных сроков завершения (значения должны убывать):</p>
+            
+            <div id="profit-table-inputs">
+                <!-- Будет сгенерировано динамически -->
+            </div>
+            
+            <div class="button-container">
+                <button id="calculate-btn">Рассчитать</button>
+            </div>
+        </div>
+        
+        <div id="results" class="container hidden">
+            <h2>Результаты расчетов</h2>
+            
+            <h3>Таблица временных сценариев</h3>
+            <div id="time-scenarios-table"></div>
+            
+            <h3>Детальные таблицы перебора сценариев</h3>
+            <button class="toggle-details" onclick="app.toggleDetails('detailed-scenarios')">
+                Показать/скрыть детальные таблицы
+            </button>
+            <div id="detailed-scenarios" class="hidden">
+                <h4>Без использования резервных средств</h4>
+                <div class="scenario-table">
+                    <table id="detailed-table-without">
+                        <thead>
+                            <tr>
+                                <th>C</th>
+                                <th>D</th>
+                                <th>E</th>
+                                <th>Время</th>
+                                <th>Прибыль</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Заполнится динамически -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h4>С использованием резервных средств</h4>
+                <div class="scenario-table">
+                    <table id="detailed-table-with">
+                        <thead>
+                            <tr>
+                                <th>C</th>
+                                <th>D</th>
+                                <th>E</th>
+                                <th>Ускорен</th>
+                                <th>Время</th>
+                                <th>Прибыль</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Заполнится динамически -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <h3>Анализ принципов принятия решений</h3>
+            <div id="principles-analysis"></div>
+            
+            <h3>Рекомендация</h3>
+            <div id="recommendation"></div>
+            
+            <div class="button-container">
+                <button id="simulate-btn">Смоделировать случайный сценарий</button>
+            </div>
+            <div id="simulation-result" class="hidden"></div>
+            
+            <div class="export-buttons">
+                <button id="export-txt-btn">Экспорт в TXT</button>
+                <!--<button id="export-csv-btn">Экспорт в CSV</button>-->
+                
+            </div>
+        </div>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

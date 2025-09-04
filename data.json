@@ -1,0 +1,13 @@
+{
+    "defaultValues": {
+      "a": 3,
+      "b": 1,
+      "n": 2,
+      "r": 20,
+      "profits": [150, 130, 100, 70, 40]
+    },
+    "calculations": {
+      "totalScenarios": 27,
+      "timeRange": [5, 9]
+    }
+  }
