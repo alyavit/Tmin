@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Расчет использования резервных средств</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="main-container">
@@ -42,6 +43,7 @@
             
             <div class="button-container">
                 <button id="calculate-btn">Рассчитать</button>
+                <button id="save-data-btn">Сохранить данные</button>
             </div>
         </div>
         
@@ -50,6 +52,19 @@
             
             <h3>Таблица временных сценариев</h3>
             <div id="time-scenarios-table"></div>
+            
+            <h3>Диаграммы анализа</h3>
+            <div class="charts-container">
+                <div class="chart-wrapper">
+                    <canvas id="timeDistributionChart"></canvas>
+                </div>
+                <!--div class="chart-wrapper">
+                    <canvas id="profitComparisonChart"></canvas>
+                </div>-->
+                <div class="chart-wrapper">
+                    <canvas id="principlesChart"></canvas>
+                </div>
+            </div>
             
             <h3>Детальные таблицы перебора сценариев</h3>
             <button class="toggle-details" onclick="app.toggleDetails('detailed-scenarios')">

@@ -9,6 +9,7 @@ const app = {
     // Инициализация приложения
     init: function() {
         this.setupEventListeners();
+        this.loadData();
         this.generateProfitTableInputs();
     },
     
@@ -19,6 +20,7 @@ const app = {
         document.getElementById('b').addEventListener('change', () => this.generateProfitTableInputs());
         
         document.getElementById('calculate-btn').addEventListener('click', () => this.calculate());
+        document.getElementById('save-data-btn').addEventListener('click', () => this.saveData());
         document.getElementById('simulate-btn').addEventListener('click', () => this.simulateRandomScenario());
         document.getElementById('export-txt-btn').addEventListener('click', () => this.exportData('txt'));
         //document.getElementById('export-csv-btn').addEventListener('click', () => this.exportData('csv'));
@@ -55,9 +57,9 @@ const app = {
             input.id = `profit-${time}`;
             input.min = '0';
             
-            // Установка значений по умолчанию
-            const defaultValues = [150, 130, 100, 70, 40];
-            input.value = defaultValues[i];
+            // Установка значений по умолчанию или загруженных данных
+            const defaultValues = this.savedProfits || [150, 130, 100, 70, 40];
+            input.value = defaultValues[i] || defaultValues[i];
             
             div.appendChild(label);
             div.appendChild(input);
@@ -72,6 +74,11 @@ const app = {
         const b = parseInt(document.getElementById('b').value);
         const n = parseInt(document.getElementById('n').value);
         const r = parseInt(document.getElementById('r').value);
+        
+        // Валидация входных данных
+        if (!this.validateInputs(a, b, n, r)) {
+            return;
+        }
         
         // Получение таблицы прибыли
         this.profitTable = {};
@@ -100,6 +107,32 @@ const app = {
         document.getElementById('results').classList.remove('hidden');
     },
     
+    // Валидация входных данных
+    validateInputs: function(a, b, n, r) {
+        const errors = [];
+        
+        if (a <= 0) errors.push('Этап A должен быть больше 0');
+        if (b <= 0) errors.push('Этап B должен быть больше 0');
+        if (n <= 0) errors.push('Базовое время n должно быть больше 0');
+        if (r <= 0) errors.push('Резервные средства R должны быть больше 0');
+        
+        // Проверка таблицы прибыли
+        for (let i = 0; i < 5; i++) {
+            const time = this.minTime + i;
+            const profit = parseInt(document.getElementById(`profit-${time}`).value);
+            if (profit < 0) {
+                errors.push(`Прибыль за ${time} лет не может быть отрицательной`);
+            }
+        }
+        
+        if (errors.length > 0) {
+            alert('Ошибки валидации:\n' + errors.join('\n'));
+            return false;
+        }
+        
+        return true;
+    },
+    
     // Валидация таблицы прибыли
     validateProfitTable: function() {
         let prevProfit = Infinity;
@@ -119,9 +152,9 @@ const app = {
         this.timeScenarios = [];
         
         // Все возможные комбинации для c, d, e
-        for (let c = n; c <= n + 2; c++) {
-            for (let d = n; d <= n + 2; d++) {
-                for (let e = n; e <= n + 2; e++) {
+        for (let c = n; c <= n + 5; c++) {
+            for (let d = n; d <= n + 5; d++) {
+                for (let e = n; e <= n + 5; e++) {
                     const time = Math.max(a + d, c, b + e);
                     this.timeScenarios.push({
                         c, d, e,
@@ -137,9 +170,9 @@ const app = {
     calculateScenariosWithReserve: function(a, b, n, r) {
         this.timeScenariosWithReserve = [];
         
-        for (let c = n; c <= n + 2; c++) {
-            for (let d = n; d <= n + 2; d++) {
-                for (let e = n; e <= n + 2; e++) {
+        for (let c = n; c <= n + 5; c++) {
+            for (let d = n; d <= n + 5; d++) {
+                for (let e = n; e <= n + 5; e++) {
                     // Пробуем ускорить каждый из этапов
                     const scenarios = [];
                     
@@ -182,6 +215,7 @@ const app = {
         this.displayTimeScenarios();
         this.displayDetailedScenarios();
         this.displayPrinciplesAnalysis();
+        this.createCharts();
     },
     
     // Отображение таблицы временных сценариев
@@ -415,7 +449,7 @@ const app = {
         return {
             time: mostLikelyTime,
             probability: (maxCount / scenarios.length * 100).toFixed(2),
-            avgProfit: (timeProfits[mostLikelyTime] / maxCount).toFixed(2)
+            avgProfit: (timeProfits[mostLikelyTime] / maxCount)
         };
     },
     
@@ -522,6 +556,264 @@ const app = {
         }
         
         return content;
+    },
+    
+    // Сохранение данных в data.json
+    saveData: function() {
+        const data = {
+            defaultValues: {
+                a: parseInt(document.getElementById('a').value),
+                b: parseInt(document.getElementById('b').value),
+                n: parseInt(document.getElementById('n').value),
+                r: parseInt(document.getElementById('r').value),
+                profits: []
+            },
+            calculations: {
+                totalScenarios: this.timeScenarios.length || 27,
+                timeRange: this.minTime ? [this.minTime, this.minTime + 4] : [5, 9]
+            }
+        };
+        
+        // Сохранение таблицы прибыли
+        for (let i = 0; i < 5; i++) {
+            const time = this.minTime + i;
+            const profit = parseInt(document.getElementById(`profit-${time}`).value);
+            data.defaultValues.profits.push(profit);
+        }
+        
+        // Отправка данных на сервер (в реальном проекте)
+        // Для демонстрации просто выводим в консоль
+        console.log('Данные для сохранения:', JSON.stringify(data, null, 2));
+        
+        // В реальном проекте здесь был бы fetch запрос к серверу
+        // fetch('/api/save-data', {
+        //     method: 'POST',
+        //     headers: { 'Content-Type': 'application/json' },
+        //     body: JSON.stringify(data)
+        // });
+    },
+    
+    // Загрузка данных из data.json
+    loadData: function() {
+        // В реальном проекте здесь был бы fetch запрос
+        // fetch('/api/load-data')
+        //     .then(response => response.json())
+        //     .then(data => this.applyLoadedData(data));
+        
+        // Для демонстрации используем данные из файла
+        fetch('./data.json')
+            .then(response => response.json())
+            .then(data => this.applyLoadedData(data))
+            .catch(error => {
+                console.log('Не удалось загрузить данные, используются значения по умолчанию');
+                this.applyLoadedData({
+                    defaultValues: {
+                        a: 3, b: 1, n: 2, r: 20,
+                        profits: [150, 130, 100, 70, 40]
+                    }
+                });
+            });
+    },
+    
+    // Применение загруженных данных
+    applyLoadedData: function(data) {
+        if (data.defaultValues) {
+            document.getElementById('a').value = data.defaultValues.a || 3;
+            document.getElementById('b').value = data.defaultValues.b || 1;
+            document.getElementById('n').value = data.defaultValues.n || 2;
+            document.getElementById('r').value = data.defaultValues.r || 20;
+            
+            // Сохраняем данные о прибыли для последующего использования
+            this.savedProfits = data.defaultValues.profits || [150, 130, 100, 70, 40];
+        }
+    },
+    
+    // Создание диаграмм
+    createCharts: function() {
+        this.createTimeDistributionChart();
+        //this.createProfitComparisonChart();
+        this.createPrinciplesChart();
+    },
+    
+    // Диаграмма распределения времени
+    createTimeDistributionChart: function() {
+        const ctx = document.getElementById('timeDistributionChart').getContext('2d');
+        
+        const timeStats = this.calculateTimeStats(this.timeScenarios);
+        const timeStatsWithReserve = this.calculateTimeStats(this.timeScenariosWithReserve);
+        
+        const times = Object.keys(timeStats).sort((a, b) => parseInt(a) - parseInt(b));
+        const probabilitiesWithout = times.map(time => (timeStats[time].count / this.timeScenarios.length * 100).toFixed(2));
+        const probabilitiesWith = times.map(time => (timeStatsWithReserve[time] ? timeStatsWithReserve[time].count / this.timeScenariosWithReserve.length * 100 : 0).toFixed(2));
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: times.map(t => `${t} лет`),
+                datasets: [{
+                    label: 'Без резерва (%)',
+                    data: probabilitiesWithout,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'С резервом (%)',
+                    data: probabilitiesWith,
+                    backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Распределение вероятностей времени завершения'
+                    },
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Вероятность (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Время завершения'
+                        }
+                    }
+                }
+            }
+        });
+    },
+    
+    /*/ Диаграмма сравнения прибыли
+    createProfitComparisonChart: function() {
+        const ctx = document.getElementById('profitComparisonChart').getContext('2d');
+        
+        const timeStats = this.calculateTimeStats(this.timeScenarios);
+        const timeStatsWithReserve = this.calculateTimeStats(this.timeScenariosWithReserve);
+        
+        const times = Object.keys(timeStats).sort((a, b) => parseInt(a) - parseInt(b));
+        const avgProfitWithout = times.map(time => (timeStats[time].totalProfit / timeStats[time].count).toFixed(2));
+        const avgProfitWith = times.map(time => (timeStatsWithReserve[time] ? timeStatsWithReserve[time].totalProfit / timeStatsWithReserve[time].count : 0).toFixed(2));
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: times.map(t => `${t} лет`),
+                datasets: [{
+                    label: 'Без резерва (млн. руб.)',
+                    data: avgProfitWithout,
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                    tension: 0.1,
+                    fill: false
+                }, {
+                    label: 'С резервом (млн. руб.)',
+                    data: avgProfitWith,
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Сравнение средней прибыли по времени'
+                    },
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Средняя прибыль (млн. руб.)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Время завершения'
+                        }
+                    }
+                }
+            }
+        });
+    },*/
+    
+    // Диаграмма принципов принятия решений
+    createPrinciplesChart: function() {
+        const ctx = document.getElementById('principlesChart').getContext('2d');
+        
+        const mostLikelyTimeWithout = this.findMostLikelyTime(this.timeScenarios);
+        const mostLikelyTimeWith = this.findMostLikelyTime(this.timeScenariosWithReserve);
+        const expectedProfitWithout = this.calculateExpectedProfit(this.timeScenarios);
+        const expectedProfitWith = this.calculateExpectedProfit(this.timeScenariosWithReserve);
+        const minProfitWithout = this.calculateMinProfit(this.timeScenarios);
+        const minProfitWith = this.calculateMinProfit(this.timeScenariosWithReserve);
+        
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Макс. правдоподобие', 'Ожидаемая прибыль', 'Минимальный риск'],
+                datasets: [{
+                    label: 'Без резерва',
+                    data: [
+                        parseFloat(mostLikelyTimeWithout.avgProfit),
+                        expectedProfitWithout,
+                        minProfitWithout
+                    ],
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    pointBackgroundColor: 'rgba(54, 162, 235, 1)'
+                }, {
+                    label: 'С резервом',
+                    data: [
+                        parseFloat(mostLikelyTimeWith.avgProfit),
+                        expectedProfitWith,
+                        minProfitWith
+                    ],
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    pointBackgroundColor: 'rgba(255, 99, 132, 1)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Сравнение по принципам принятия решений'
+                    },
+                    legend: {
+                        display: true
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Прибыль (млн. руб.)'
+                        }
+                    }
+                }
+            }
+        });
     }
 };
 
