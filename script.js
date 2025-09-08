@@ -152,9 +152,9 @@ const app = {
         this.timeScenarios = [];
         
         // Все возможные комбинации для c, d, e
-        for (let c = n; c <= n + 5; c++) {
-            for (let d = n; d <= n + 5; d++) {
-                for (let e = n; e <= n + 5; e++) {
+        for (let c = n; c <= n + 3; c++) {
+            for (let d = n; d <= n + 3; d++) {
+                for (let e = n; e <= n + 3; e++) {
                     const time = Math.max(a + d, c, b + e);
                     this.timeScenarios.push({
                         c, d, e,
@@ -170,34 +170,53 @@ const app = {
     calculateScenariosWithReserve: function(a, b, n, r) {
         this.timeScenariosWithReserve = [];
         
-        for (let c = n; c <= n + 5; c++) {
-            for (let d = n; d <= n + 5; d++) {
-                for (let e = n; e <= n + 5; e++) {
-                    // Пробуем ускорить каждый из этапов
+        for (let c = n; c <= n + 3; c++) {
+            for (let d = n; d <= n + 3; d++) {
+                for (let e = n; e <= n + 3; e++) {
+                    // Пробуем ускорить каждый из этапов A, B, C, D, E
                     const scenarios = [];
                     
+                    // Ускорение этапа A
+                    scenarios.push({
+                        accelerated: 'A',
+                        time: Math.max(Math.max(a - 1, 1) + d, c, b + e),
+                        profit: (this.profitTable[Math.max(Math.max(a - 1, 1) + d, c, b + e)] || 0) - r
+                    });
+                    
+                    // Ускорение этапа B
+                    scenarios.push({
+                        accelerated: 'B',
+                        time: Math.max(a + d, c, Math.max(b - 1, 1) + e),
+                        profit: (this.profitTable[Math.max(a + d, c, Math.max(b - 1, 1) + e)] || 0) - r
+                    });
+                    
+                    // Ускорение этапа C
                     scenarios.push({
                         accelerated: 'C',
                         time: Math.max(a + d, Math.max(c - 1, n), b + e),
                         profit: (this.profitTable[Math.max(a + d, Math.max(c - 1, n), b + e)] || 0) - r
                     });
                     
+                    // Ускорение этапа D
                     scenarios.push({
                         accelerated: 'D',
                         time: Math.max(a + Math.max(d - 1, n), c, b + e),
                         profit: (this.profitTable[Math.max(a + Math.max(d - 1, n), c, b + e)] || 0) - r
                     });
                     
+                    // Ускорение этапа E
                     scenarios.push({
                         accelerated: 'E',
                         time: Math.max(a + d, c, b + Math.max(e - 1, n)),
                         profit: (this.profitTable[Math.max(a + d, c, b + Math.max(e - 1, n))] || 0) - r
                     });
                     
-                    // Находим лучший вариант ускорения
-                    const bestScenario = scenarios.reduce((best, current) => 
-                        current.time < best.time ? current : best
-                    );
+                    // Находим лучший вариант ускорения (сначала по времени, потом по прибыли)
+                    const bestScenario = scenarios.reduce((best, current) => {
+                        if (current.time < best.time) return current;
+                        if (current.time === best.time && current.profit > best.profit) return current;
+                        return best;
+                    });
                     
                     this.timeScenariosWithReserve.push({
                         c, d, e,
