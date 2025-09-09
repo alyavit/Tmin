@@ -152,9 +152,9 @@ const app = {
         this.timeScenarios = [];
         
         // Все возможные комбинации для c, d, e
-        for (let c = n; c <= n + 3; c++) {
-            for (let d = n; d <= n + 3; d++) {
-                for (let e = n; e <= n + 3; e++) {
+        for (let c = n; c <= n + 2; c++) {
+            for (let d = n; d <= n + 2; d++) {
+                for (let e = n; e <= n + 2; e++) {
                     const time = Math.max(a + d, c, b + e);
                     this.timeScenarios.push({
                         c, d, e,
@@ -170,9 +170,9 @@ const app = {
     calculateScenariosWithReserve: function(a, b, n, r) {
         this.timeScenariosWithReserve = [];
         
-        for (let c = n; c <= n + 3; c++) {
-            for (let d = n; d <= n + 3; d++) {
-                for (let e = n; e <= n + 3; e++) {
+        for (let c = n; c <= n + 2; c++) {
+            for (let d = n; d <= n + 2; d++) {
+                for (let e = n; e <= n + 2; e++) {
                     // Пробуем ускорить каждый из этапов A, B, C, D, E
                     const scenarios = [];
                     
@@ -839,4 +839,5 @@ const app = {
 // Инициализация приложения после загрузки DOM
 document.addEventListener('DOMContentLoaded', function() {
     app.init();
+
 });
