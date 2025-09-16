@@ -10,7 +10,6 @@ const app = {
     init: function() {
         this.setupEventListeners();
         this.loadData();
-        this.generateProfitTableInputs();
     },
     
     // Настройка обработчиков событий
@@ -39,7 +38,7 @@ const app = {
         const n = parseInt(document.getElementById('n').value);
         
         // Расчет минимального времени
-        this.minTime = Math.max(a + n, n, b + n);
+        this.minTime = Math.max(a + n, n, b + n)-1;
         
         const container = document.getElementById('profit-table-inputs');
         container.innerHTML = '';
@@ -600,16 +599,23 @@ const app = {
             data.defaultValues.profits.push(profit);
         }
         
-        // Отправка данных на сервер (в реальном проекте)
-        // Для демонстрации просто выводим в консоль
-        console.log('Данные для сохранения:', JSON.stringify(data, null, 2));
-        
-        // В реальном проекте здесь был бы fetch запрос к серверу
-        // fetch('/api/save-data', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(data)
-        // });
+        // Отправка данных на сервер для сохранения в data.json
+        fetch('/api/save-data', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Сохранение не удалось');
+            return response.json();
+        })
+        .then(() => {
+            alert('Данные успешно сохранены в data.json');
+        })
+        .catch(err => {
+            console.error('Ошибка сохранения:', err);
+            alert('Ошибка сохранения данных. Убедитесь, что сервер запущен.');
+        });
     },
     
     // Загрузка данных из data.json
@@ -627,8 +633,8 @@ const app = {
                 console.log('Не удалось загрузить данные, используются значения по умолчанию');
                 this.applyLoadedData({
                     defaultValues: {
-                        a: 3, b: 1, n: 2, r: 20,
-                        profits: [150, 130, 100, 70, 40]
+                        a: 2, b: 1, n: 2, r: 20,
+                        profits: [120, 110, 100, 50, 0]
                     }
                 });
             });
@@ -644,6 +650,9 @@ const app = {
             
             // Сохраняем данные о прибыли для последующего использования
             this.savedProfits = data.defaultValues.profits || [150, 130, 100, 70, 40];
+            
+            // Генерируем поля таблицы прибыли после загрузки данных
+            this.generateProfitTableInputs();
         }
     },
     
@@ -839,5 +848,4 @@ const app = {
 // Инициализация приложения после загрузки DOM
 document.addEventListener('DOMContentLoaded', function() {
     app.init();
-
 });
